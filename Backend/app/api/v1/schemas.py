@@ -10,7 +10,7 @@ class Statement(BaseModel):
 class DebateTurnRequest(BaseModel):
     model_a: str
     model_b: str
-    current_turn: str                 # which model should speak now (must equal model_a or model_b)
+    current_turn: str
     original_debate_topic: str
     previous_conversation: Optional[List[Statement]] = []
     current_round: int = 1
@@ -29,6 +29,10 @@ class SessionCreateRequest(BaseModel):
     starting_turn: str
     original_debate_topic: str
     max_rounds: int = 3
+    model_a_model: Optional[str] = "gpt-3.5-turbo"
+    model_b_model: Optional[str] = "gpt-3.5-turbo"
+    model_a_stance: Optional[str] = "Argue in favor"
+    model_b_stance: Optional[str] = "Argue against"
 
 class SessionCreateResponse(BaseModel):
     session_id: UUID
@@ -38,6 +42,10 @@ class SessionStateResponse(BaseModel):
     session_id: UUID
     model_a: str
     model_b: str
+    model_a_model: str
+    model_b_model: str
+    model_a_stance: Optional[str]
+    model_b_stance: Optional[str]
     current_turn: str
     current_round: int
     max_rounds: int

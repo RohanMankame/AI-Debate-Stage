@@ -30,6 +30,10 @@ async def create_session(req: s.SessionCreateRequest, manager: DebateManager = D
             starting_turn=req.starting_turn,
             topic=req.original_debate_topic,
             max_rounds=req.max_rounds,
+            model_a_model=req.model_a_model,
+            model_b_model=req.model_b_model,
+            model_a_stance=req.model_a_stance,
+            model_b_stance=req.model_b_stance,
         )
         return s.SessionCreateResponse(session_id=session_id, state=state)
     except Exception as e:
