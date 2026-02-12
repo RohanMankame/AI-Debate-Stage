@@ -1,17 +1,52 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.api.v1.schemas import DebateRequest, DebateResponse
+from uuid import UUID
+from app.api.v1 import schemas as s
 from app.api.services.debate_manager import get_debate_manager, DebateManager
 
 router = APIRouter()
 
-@router.post("/debate", response_model=DebateResponse)
-async def start_debate(req: DebateRequest, manager: DebateManager = Depends(get_debate_manager)):
-    """
-    Start a debate between two AI models on a topic.
-    Currently returns a mocked turn-by-turn result; replace with model integrations.
-    """
+@router.post("/debate/turn", response_model=s.DebateTurnResponse)
+async def debate_turn(req: s.DebateTurnRequest, manager: DebateManager = Depends(get_debate_manager)):
     try:
-        result = await manager.run_debate(req.topic, req.model_a, req.model_b, req.rounds)
-        return DebateResponse(topic=req.topic, transcript=result)
+        resp = await manager.handle_turn(
+            model_a=req.model_a,
+            model_b=req.model_b,
+            current_turn=req.current_turn,
+            topic=req.original_debate_topic,
+            previous_conversation=req.previous_conversation or [],
+            current_round=req.current_round,
+            max_rounds=req.max_rounds,
+        )
+        return resp
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/debate/session", response_model=s.SessionCreateResponse)
+async def create_session(req: s.SessionCreateRequest, manager: DebateManager = Depends(get_debate_manager)):
+    try:
+        session_id, state = manager.create_session(
+            model_a=req.model_a,
+            model_b=req.model_b,
+            starting_turn=req.starting_turn,
+            topic=req.original_debate_topic,
+            max_rounds=req.max_rounds,
+        )
+        return s.SessionCreateResponse(session_id=session_id, state=state)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/debate/session/{session_id}/advance", response_model=s.DebateTurnResponse)
+async def advance_session(session_id: UUID, manager: DebateManager = Depends(get_debate_manager)):
+    try:
+        return await manager.advance_session(session_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/debate/session/{session_id}", response_model=s.SessionStateResponse)
+async def get_session(session_id: UUID, manager: DebateManager = Depends(get_debate_manager)):
+    try:
+        return manager.get_session_state(session_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found")
