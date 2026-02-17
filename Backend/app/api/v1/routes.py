@@ -34,6 +34,10 @@ async def create_session(req: s.SessionCreateRequest, manager: DebateManager = D
             model_b_model=req.model_b_model,
             model_a_stance=req.model_a_stance,
             model_b_stance=req.model_b_stance,
+            judge_name=req.judge_name,
+            judge_model=req.judge_model,
+            judge_model_model=req.judge_model_model,
+            judge_instructions=req.judge_instructions,
         )
         return s.SessionCreateResponse(session_id=session_id, state=state)
     except Exception as e:
@@ -54,3 +58,12 @@ async def get_session(session_id: UUID, manager: DebateManager = Depends(get_deb
         return manager.get_session_state(session_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="session not found")
+
+@router.post("/debate/session/{session_id}/judge", response_model=s.JudgeResponse)
+async def judge_session(session_id: UUID, manager: DebateManager = Depends(get_debate_manager)):
+    try:
+        return await manager.evaluate_session(session_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="session not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
