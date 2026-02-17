@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Settings, Play, MessageSquare } from 'lucide-react';
+import { Settings, Play, MessageSquare, Bot } from 'lucide-react';
+
+const AVAILABLE_MODELS = [
+    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+    { value: 'gpt-4', label: 'GPT-4' },
+    { value: 'claude-3-opus', label: 'Claude 3 Opus' },
+    { value: 'claude-3-sonnet', label: 'Claude 3 Sonnet' },
+];
 
 const SetupForm = ({ onStartDebate, isLoading }) => {
     const [formData, setFormData] = useState({
@@ -8,6 +15,8 @@ const SetupForm = ({ onStartDebate, isLoading }) => {
         model_b: 'Debater B',
         model_a_stance: 'In favor',
         model_b_stance: 'Against',
+        model_a_model: 'gpt-3.5-turbo',
+        model_b_model: 'gpt-3.5-turbo',
     });
 
     const handleSubmit = (e) => {
@@ -18,7 +27,10 @@ const SetupForm = ({ onStartDebate, isLoading }) => {
             model_b: formData.model_b,
             model_a_stance: formData.model_a_stance,
             model_b_stance: formData.model_b_stance,
-            max_rounds: 3, // Default for now
+            model_a_model: formData.model_a_model,
+            model_b_model: formData.model_b_model,
+            starting_turn: formData.model_a, // Model A starts by default
+            max_rounds: 3,
         });
     };
 
@@ -53,70 +65,106 @@ const SetupForm = ({ onStartDebate, isLoading }) => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Debater A */}
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
-                        <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4 flex items-center gap-2">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4">
+                        <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                             Debater A
                         </h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                    Name
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-                                    value={formData.model_a}
-                                    onChange={(e) => setFormData({ ...formData, model_a: e.target.value })}
-                                />
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                Name
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                                value={formData.model_a}
+                                onChange={(e) => setFormData({ ...formData, model_a: e.target.value })}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                Model
+                            </label>
+                            <div className="relative">
+                                <Bot className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                <select
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white appearance-none"
+                                    value={formData.model_a_model}
+                                    onChange={(e) => setFormData({ ...formData, model_a_model: e.target.value })}
+                                >
+                                    {AVAILABLE_MODELS.map(model => (
+                                        <option key={model.value} value={model.value}>{model.label}</option>
+                                    ))}
+                                </select>
                             </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                    Stance
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
-                                    value={formData.model_a_stance}
-                                    onChange={(e) => setFormData({ ...formData, model_a_stance: e.target.value })}
-                                />
-                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                Stance
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                                value={formData.model_a_stance}
+                                onChange={(e) => setFormData({ ...formData, model_a_stance: e.target.value })}
+                            />
                         </div>
                     </div>
 
                     {/* Debater B */}
-                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800">
-                        <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300 mb-4 flex items-center gap-2">
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800 space-y-4">
+                        <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300 flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                             Debater B
                         </h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                    Name
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
-                                    value={formData.model_b}
-                                    onChange={(e) => setFormData({ ...formData, model_b: e.target.value })}
-                                />
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                Name
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                                value={formData.model_b}
+                                onChange={(e) => setFormData({ ...formData, model_b: e.target.value })}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                Model
+                            </label>
+                            <div className="relative">
+                                <Bot className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                <select
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white appearance-none"
+                                    value={formData.model_b_model}
+                                    onChange={(e) => setFormData({ ...formData, model_b_model: e.target.value })}
+                                >
+                                    {AVAILABLE_MODELS.map(model => (
+                                        <option key={model.value} value={model.value}>{model.label}</option>
+                                    ))}
+                                </select>
                             </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                    Stance
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
-                                    value={formData.model_b_stance}
-                                    onChange={(e) => setFormData({ ...formData, model_b_stance: e.target.value })}
-                                />
-                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                Stance
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
+                                value={formData.model_b_stance}
+                                onChange={(e) => setFormData({ ...formData, model_b_stance: e.target.value })}
+                            />
                         </div>
                     </div>
                 </div>
