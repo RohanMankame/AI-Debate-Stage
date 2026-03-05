@@ -7,6 +7,8 @@ class Statement(BaseModel):
     text: str
     round: int
 
+
+
 class DebateTurnRequest(BaseModel):
     model_a: str
     model_b: str
@@ -16,12 +18,16 @@ class DebateTurnRequest(BaseModel):
     current_round: int = 1
     max_rounds: int = 3
 
+
+
 class DebateTurnResponse(BaseModel):
     next_turn: str
     current_round: int
     done: bool
     updated_conversation: List[Statement]
     message: Optional[str] = None
+
+
 
 class SessionCreateRequest(BaseModel):
     model_a: str
@@ -39,9 +45,13 @@ class SessionCreateRequest(BaseModel):
     judge_model_model: Optional[str] = "gpt-4"
     judge_instructions: Optional[str] = "Read the full debate transcript and decide the winner based on the strength of arguments and persuasiveness."
 
+
+
 class SessionCreateResponse(BaseModel):
     session_id: UUID
     state: DebateTurnResponse
+
+
 
 class SessionStateResponse(BaseModel):
     session_id: UUID
@@ -60,6 +70,8 @@ class SessionStateResponse(BaseModel):
     max_rounds: int
     done: bool
     transcript: List[Statement]
+
+
 
 class JudgeResponse(BaseModel):
     winner: Optional[str]

@@ -5,6 +5,23 @@
   text-align: center;
 }
 
+
+/* Hide inner scrollbar while preserving scrolling behavior */
+.no-scrollbar {
+  overflow-y: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Slight visual polish for conversation area */
+.bg-white\/80 {
+  background-color: rgba(255,255,255,0.8);
+}
+
+
 .logo {
   height: 6em;
   padding: 1.5em;

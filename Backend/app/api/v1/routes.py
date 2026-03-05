@@ -7,6 +7,9 @@ router = APIRouter()
 
 @router.post("/debate/turn", response_model=s.DebateTurnResponse)
 async def debate_turn(req: s.DebateTurnRequest, manager: DebateManager = Depends(get_debate_manager)):
+    """
+    Process a single debate turn based on the provided input parameters.
+    """
     try:
         resp = await manager.handle_turn(
             model_a=req.model_a,
@@ -21,8 +24,15 @@ async def debate_turn(req: s.DebateTurnRequest, manager: DebateManager = Depends
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+
+
+
 @router.post("/debate/session", response_model=s.SessionCreateResponse)
 async def create_session(req: s.SessionCreateRequest, manager: DebateManager = Depends(get_debate_manager)):
+    """
+    Create a new debate session with the specified parameters.
+    """
     try:
         session_id, state = manager.create_session(
             model_a=req.model_a,
@@ -43,8 +53,16 @@ async def create_session(req: s.SessionCreateRequest, manager: DebateManager = D
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+
+
+
 @router.post("/debate/session/{session_id}/advance", response_model=s.DebateTurnResponse)
 async def advance_session(session_id: UUID, manager: DebateManager = Depends(get_debate_manager)):
+    """
+    Advance a debate session by one turn.
+    This will automatically determine which model's turn it is, generate the next turn, and update the session state.
+    """
     try:
         return await manager.advance_session(session_id)
     except KeyError:
@@ -52,15 +70,31 @@ async def advance_session(session_id: UUID, manager: DebateManager = Depends(get
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+
+
+
 @router.get("/debate/session/{session_id}", response_model=s.SessionStateResponse)
 async def get_session(session_id: UUID, manager: DebateManager = Depends(get_debate_manager)):
+    """
+    Retrieve the current state of a debate session.
+    """
     try:
         return manager.get_session_state(session_id)
     except KeyError:
         raise HTTPException(status_code=404, detail="session not found")
 
+
+
+
+
+
 @router.post("/debate/session/{session_id}/judge", response_model=s.JudgeResponse)
 async def judge_session(session_id: UUID, manager: DebateManager = Depends(get_debate_manager)):
+    """
+    Judging of a debate session. 
+    This will evaluate the final debate state and determine a winner.
+    """
     try:
         return await manager.evaluate_session(session_id)
     except KeyError:
